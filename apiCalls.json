@@ -1,0 +1,218 @@
+{
+  "artifacts": {
+    "oauthClients": {
+      "endpoint": "/oauth/clients",
+      "require_env_change": true,
+      "replacement_env_fields": [
+        "oidcPolicy",
+        "redirectUris",
+        "clientAuth",
+        "clientId",
+        "defaultAccessTokenManagerRef"
+      ],
+      "identifier": "clientId"
+    },
+    "idpAdapter": {
+      "endpoint": "/idp/adapters",
+      "require_env_change": true,
+      "replacement_env_fields": [
+        "pluginDescriptorRef",
+        "configuration"
+      ],
+      "identifier": "id"
+    },
+    "notificationPublisher": {
+      "endpoint": "/notificationPublishers",
+      "require_env_change": false,
+      "replacement_env_fields": [
+      ],
+      "identifier": "null"
+    },
+    "authenticationPolicies": {
+      "endpoint": "/authenticationPolicies/default",
+      "require_env_change": false,
+      "replacement_env_fields": [
+        "authnSelectionTrees"
+      ],
+      "identifier": "id"
+    },
+    "authenticationPolicyFragments": {
+      "endpoint": "/authenticationPolicies/fragments",
+      "require_env_change": true,
+      "replacement_env_fields": ["rootNode"],
+      "identifier": "id"
+    },
+    "samlSPConnections": {
+      "endpoint": "/idp/spConnections",
+      "require_env_change": false,
+      "replacement_env_fields": [
+        "spBrowserSso"
+      ],
+      "identifier": "id"
+    },
+    "passwordCredentialValidators": {
+      "endpoint": "/passwordCredentialValidators",
+      "require_env_change": false,
+      "replacement_env_fields": [
+        "pluginDescriptorRef",
+        "configuration"
+      ],
+      "identifier": "id"
+    },
+    "accessTokenManagers": {
+      "endpoint": "/oauth/accessTokenManagers",
+      "require_env_change": false,
+      "replacement_env_fields": [
+        "pluginDescriptorRef",
+        "configuration"
+      ],
+      "identifier": "id"
+    },
+    "accessTokenMappings": {
+      "endpoint": "/oauth/accessTokenMappings",
+      "require_env_change": false,
+      "replacement_env_fields": [
+        "accessTokenManagerRef",
+        "context"
+      ],
+      "identifier": "id"
+    },
+    "authenticationPolicyContracts": {
+      "endpoint": "/authenticationPolicyContracts",
+      "require_env_change": false,
+      "replacement_env_fields": [],
+      "identifier": "id"
+    },
+    "datastores": {
+      "endpoint": "/dataStores",
+      "require_env_change": true,
+      "replacement_env_fields": [
+        "hostnames",
+        "hostnamesTags",
+        "name",
+        "userDN",
+        "pluginDescriptorRef",
+        "configuration"
+      ],
+      "identifier": "id"
+    },
+    "keyPairs": {
+      "endpoint": "/keyPairs/signing",
+      "require_env_change": false,
+      "replacement_env_fields": [],
+      "identifier": "null"
+    },
+    "oauthOpenIdConnectKeys": {
+      "endpoint": "/keyPairs/oauthOpenIdConnect",
+      "require_env_change": false,
+      "replacement_env_fields": [],
+      "identifier": "null"
+    },
+    "virtualHosts": {
+      "endpoint": "/virtualHostNames",
+      "require_env_change": false,
+      "replacement_env_fields": [],
+      "identifier": "null"
+    },
+    "sessions": {
+      "endpoint": "/session/authenticationSessionPolicies",
+      "require_env_change": false,
+      "replacement_env_fields": [
+      ],
+      "identifier": "null"
+    },
+    "redirectValidation": {
+      "endpoint": "/redirectValidation",
+      "require_env_change": false,
+      "replacement_env_fields": [
+      ],
+      "identifier": "null"
+    },
+    "localIdentityProfile": {
+      "endpoint": "/localIdentity/identityProfiles",
+      "require_env_change": false,
+      "replacement_env_fields": [
+      ],
+      "identifier": "null"
+    },
+    "extendedProperties": {
+      "endpoint": "/extendedProperties",
+      "require_env_change": false,
+      "replacement_env_fields": [
+      ],
+      "identifier": "name"
+    },
+    "authenticationSelectors": {
+      "endpoint": "/authenticationSelectors",
+      "require_env_change": true,
+      "replacement_env_fields": [
+        "pluginDescriptorRef",
+        "attributeContract",
+        "configuration"
+      ],
+      "identifier": "id"
+    },
+    "samlIDPConnections": {
+      "endpoint": "/sp/idpConnections",
+      "require_env_change": true,
+      "replacement_env_fields": [
+        "entityId",
+        "baseUrl",
+        "idpBrowserSso",
+        "oidcClientCredentials"
+      ],
+      "identifier": "id"
+    },
+    "openIDConnectPolicies": {
+      "endpoint": "/oauth/openIdConnect/policies",
+      "require_env_change": true,
+      "replacement_env_fields": [
+        "accessTokenManagerRef"
+      ],
+      "identifier": "id"
+    },
+    "policyGrantMappings": {
+      "endpoint": "/oauth/authenticationPolicyContractMappings",
+      "require_env_change": true,
+      "replacement_env_fields": [
+        "authenticationPolicyContractRef"
+      ],
+      "identifier": "id"
+    },
+    "authenticationPolicySettings": {
+      "endpoint": "/authenticationPolicies/settings",
+      "require_env_change": false,
+      "replacement_env_fields": [
+
+      ],
+      "identifier": "na"
+    },
+    "authenticationAPIApplications":{
+      "endpoint": "/authenticationApi/applications",
+      "require_env_change": false,
+      "replacement_env_fields": [
+
+      ],
+      "identifier": "null"
+    },
+    "oauthServerSettings":{
+      "endpoint": "/oauth/authServerSettings",
+      "require_env_change": true,
+      "replacement_env_fields": [
+        "tokenEndpointBaseUrl",
+        "userAuthorizationUrl",
+        "registeredAuthorizationPath",
+        "allowedOrigins"
+      ],
+      "identifier": "na"
+    },
+    "serverSettings":{
+      "endpoint": "/serverSettings",
+      "require_env_change": false,
+      "replacement_env_fields":[
+
+      ],
+      "identifier": "na"
+    }
+  }
+}
