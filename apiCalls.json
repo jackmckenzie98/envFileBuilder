@@ -46,7 +46,9 @@
       "endpoint": "/idp/spConnections",
       "require_env_change": false,
       "replacement_env_fields": [
-        "spBrowserSso"
+        "spBrowserSso",
+        "credentials",
+        "entityId"
       ],
       "identifier": "id"
     },
@@ -159,7 +161,8 @@
         "entityId",
         "baseUrl",
         "idpBrowserSso",
-        "oidcClientCredentials"
+        "oidcClientCredentials",
+        "additionalAllowedEntitiesConfiguration"
       ],
       "identifier": "id"
     },
