@@ -7,6 +7,14 @@ PROPERTIES_FILES_PATH = os.path.join(WORKING_PATH, r'propertiesFiles')
 MIGRATE_FROM = "https://ip-10-101-11-241"
 MIGRATE_TO = "https://debian-pingfed"
 
+# This variable specifies the environment to pair each hostname with, will be used to build "location" variables for
+# each ENV file properly.
+environments = {
+                "dev": "dev-hostname",
+                "test": "test-hostname",
+                "int": "int-hostname",
+                "prod": "prod-hostname"
+                }
 env_identifier = "test"
 
 
@@ -109,9 +117,13 @@ def build_env_file_structure(artifact, replacement_fields, identifier):
         except Exception as e:
             print(f"Error Reached for artifact {artifact}:\n{e}")
 
-    data_build = replace_location_recursive(data_build, MIGRATE_FROM, MIGRATE_TO)
-    data_build = {env_identifier: data_build}
-    return json.dumps(data_build, indent=2)
+    new_dict = {}
+    for key, value in environments.items():
+        if key not in new_dict:
+            new_dict[key] = data_build
+            new_dict[key] = replace_location_recursive(new_dict[key], "https://ip-10-101-11-241", value)
+
+    return json.dumps(new_dict, indent=2)
 
 
 # This function will find occurrences of the "location" field and replace with a replacement pulled from the properties
@@ -257,28 +269,30 @@ if __name__ == '__main__':
         # This handles the base case replacement, where we are doing a straight-up replacement of a top-level key if
         # the value in the properties file is not an empty dictionary.
         if file not in nest_cases:
-            for key, val in env_files[file][env_identifier].items():
-                if bool(properties_files[file][env_identifier][key]) is not False and isinstance(
-                        properties_files[file][env_identifier][key], dict):
-                    for k, v in properties_files[file][env_identifier][key].items():
-                        if bool(v) is not False:
-                            env_files[file][env_identifier][key][k] = v
+            for env in environments.keys():
+                for key, val in env_files[file][env].items():
+                    if bool(properties_files[file][env][key]) is not False and isinstance(
+                            properties_files[file][env][key], dict):
+                        for k, v in properties_files[file][env][key].items():
+                            if bool(v) is not False:
+                                env_files[file][env][key][k] = v
 
         # This handles the replacement of the "configuration" variable and files containing it using the path specified
         # within the properties file.  Also will deal with other variables where this artifact type is specified.
         elif file in config_nested:
-            property_paths, property_vals = return_nested_path_and_val(properties_files[file], "configuration")
-            replace_dict = {}
-            for item in range(0, len(property_paths)):
-                replace_dict = replace_into_given_path(env_files[file][env_identifier], property_paths[item],
-                                                       property_vals[item])
+            for env in environments.keys():
+                property_paths, property_vals = return_nested_path_and_val(properties_files[file][env], "configuration")
+                replace_dict = {}
+                for item in range(0, len(property_paths)):
+                    replace_dict = replace_into_given_path(env_files[file][env], property_paths[item],
+                                                               property_vals[item])
 
-            for key, val in env_files[file][env_identifier].items():
-                if bool(properties_files[file][env_identifier][key]) is not False and isinstance(
-                        properties_files[file][env_identifier][key], dict):
-                    for k, v in properties_files[file][env_identifier][key].items():
-                        if bool(v) is not False and k != "configuration":
-                            env_files[file][env_identifier][key][k] = v
+                    for key, val in env_files[file][env].items():
+                        if bool(properties_files[file][env][key]) is not False and isinstance(
+                                properties_files[file][env][key], dict):
+                            for k, v in properties_files[file][env][key].items():
+                                if bool(v) is not False and k != "configuration":
+                                    env_files[file][env][key][k] = v
 
         # This handles the replacement of any unique, non "configuration" variable with nesting(specified in
         # "unique_nesting" and files containing it using the path specified within the properties file.
@@ -286,21 +300,22 @@ if __name__ == '__main__':
         elif any(file in d for d in unique_nesting):
             unique_paths = []
             unique_vals = []
-            for i in range(0, len(unique_nesting)):
-                if file in unique_nesting[i].keys():
-                    for k, v in unique_nesting[i].items():
-                        paths, vals = return_nested_path_and_val(properties_files[file], v)
-                        unique_paths.extend(paths)
-                        unique_vals.extend(vals)
-            for item in range(0, len(unique_paths)):
-                replace_dict = replace_into_given_path(env_files[file][env_identifier], unique_paths[item], unique_vals[item])
+            for env in environments.keys():
+                for i in range(0, len(unique_nesting)):
+                    if file in unique_nesting[i].keys():
+                        for k, v in unique_nesting[i].items():
+                            paths, vals = return_nested_path_and_val(properties_files[file][env], v)
+                            unique_paths.extend(paths)
+                            unique_vals.extend(vals)
+                for item in range(0, len(unique_paths)):
+                    replace_dict = replace_into_given_path(env_files[file][env], unique_paths[item], unique_vals[item])
 
-            for key, val in env_files[file][env_identifier].items():
-                if bool(properties_files[file][env_identifier][key]) is not False and isinstance(
-                        properties_files[file][env_identifier][key], dict):
-                    for k, v in properties_files[file][env_identifier][key].items():
-                        if bool(v) is not False and k not in [val for dic in unique_nesting for val in dic.values()]:
-                            env_files[file][env_identifier][key][k] = v
+                for key, val in env_files[file][env].items():
+                    if bool(properties_files[file][env][key]) is not False and isinstance(
+                            properties_files[file][env][key], dict):
+                        for k, v in properties_files[file][env][key].items():
+                            if bool(v) is not False and k not in [val for dic in unique_nesting for val in dic.values()]:
+                                env_files[file][env][key][k] = v
 
         else:
             print("You may have an error.  Your input files do not match any base case.  Check the formatting of "
