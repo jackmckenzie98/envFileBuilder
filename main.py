@@ -4,18 +4,34 @@ import json
 WORKING_PATH = os.path.dirname(__file__)
 ARTIFACTS_PATH = os.path.join(WORKING_PATH, r'artifacts')
 PROPERTIES_FILES_PATH = os.path.join(WORKING_PATH, r'propertiesFiles')
-MIGRATE_FROM = "https://ip-10-101-11-241"
-MIGRATE_TO = "https://debian-pingfed"
-
 # This variable specifies the environment to pair each hostname with, will be used to build "location" variables for
 # each ENV file properly.
 environments = {
-                "dev": "dev-hostname",
-                "test": "test-hostname",
-                "int": "int-hostname",
-                "prod": "prod-hostname"
-                }
-env_identifier = "test"
+    "dev": "dev-hostname",
+    "test": "test-hostname",
+    "int": "int-hostname",
+    "prod": "prod-hostname"
+}
+
+# Below builds the basic structure of the ENV files, creating a JSON object with the artifact's
+# replacement_env_fields from "artifacts" using the identifier as the top level key, with these values to be
+# replaced later when writing to the file if not empty.  Otherwise, the value of the replacement variable will
+# be filled with the values from the artifact, with any "location" references replaced.
+env_files = {}
+
+# General artifacts that will have one or more variables with some form of deep nesting, where
+nest_cases = ["accessTokenManagers", "authenticationSelectors", "idpAdapter", "passwordCredentialValidators",
+              "datastores", "samlIDPConnections", "samlSPConnections", "oauthClients"]
+
+# List of artifacts where specifically the "configuration" variable has fields that will require replacing.
+config_nested = ["accessTokenManagers", "authenticationSelectors", "datastores", "idpAdapter",
+                 "passwordCredentialValidators"]
+
+# Variables that have some level of nesting to them beyond the first level key:value replacement.  Additional
+# variables can be specified by adding to the list below in the format {"artifact": "variable name"}
+unique_nesting = [{"oauthClients": "clientAuth"}, {"samlIDPConnections": "idpBrowserSso"},
+                  {"samlIDPConnections": "additionalAllowedEntitiesConfiguration"},
+                  {"samlSPConnections": "spBrowserSso"}]
 
 
 def intake_artifacts():
@@ -154,6 +170,12 @@ def replace_location_recursive(data, target_substring, replacement):
 
 
 def find_key_in_structure(nested_dict, target_key):
+    """
+    Finds data at a target key in a deeply nested dictionary, primarily used for finding paths/values in properties file
+    :param nested_dict: The nested dictionary to search through
+    :param target_key: Key to find in the nested dictionary
+    :return: return the data at the target key
+    """
     instances = []
     if isinstance(nested_dict, dict):
         for key, value, in nested_dict.items():
@@ -241,26 +263,6 @@ if __name__ == '__main__':
     # Simply takes in the propertiesFiles created by the user.
     properties_files = intake_properties_file()
 
-    # Below builds the basic structure of the ENV files, creating a JSON object with the artifact's
-    # replacement_env_fields from "artifacts" using the identifier as the top level key, with these values to be
-    # replaced later when writing to the file if not empty.  Otherwise, the value of the replacement variable will
-    # be filled with the values from the artifact, with any "location" references replaced.
-    env_files = {}
-
-    # General artifacts that will have one or more variables with some form of deep nesting, where
-    nest_cases = ["accessTokenManagers", "authenticationSelectors", "idpAdapter", "passwordCredentialValidators",
-                  "datastores", "samlIDPConnections", "samlSPConnections", "oauthClients"]
-
-    # List of artifacts where specifically the "configuration" variable has fields that will require replacing.
-    config_nested = ["accessTokenManagers", "authenticationSelectors", "datastores", "idpAdapter",
-                     "passwordCredentialValidators"]
-
-    # Variables that have some level of nesting to them beyond the first level key:value replacement.  Additional
-    # variables can be specified by adding to the list below in the format {"artifact": "variable name"}
-    unique_nesting = [{"oauthClients": "clientAuth"}, {"samlIDPConnections": "idpBrowserSso"},
-                      {"samlIDPConnections": "additionalAllowedEntitiesConfiguration"},
-                      {"samlSPConnections": "spBrowserSso"}]
-
     # Build the ENV files, perform calls to functions in order to replace values as needed.
     for file in properties_files:
         load = json.loads(build_env_file_structure(artifacts_list[file], replacement_variables_dict[file],
@@ -285,7 +287,7 @@ if __name__ == '__main__':
                 replace_dict = {}
                 for item in range(0, len(property_paths)):
                     replace_dict = replace_into_given_path(env_files[file][env], property_paths[item],
-                                                               property_vals[item])
+                                                           property_vals[item])
 
                     for key, val in env_files[file][env].items():
                         if bool(properties_files[file][env][key]) is not False and isinstance(
@@ -314,7 +316,8 @@ if __name__ == '__main__':
                     if bool(properties_files[file][env][key]) is not False and isinstance(
                             properties_files[file][env][key], dict):
                         for k, v in properties_files[file][env][key].items():
-                            if bool(v) is not False and k not in [val for dic in unique_nesting for val in dic.values()]:
+                            if bool(v) is not False and k not in [val for dic in unique_nesting for val in
+                                                                  dic.values()]:
                                 env_files[file][env][key][k] = v
 
         else:
